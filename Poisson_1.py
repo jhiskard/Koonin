@@ -116,18 +116,11 @@ y = numerov(xgrid, y_0, y_1, k, S)
 # Numerical solution with inaccurate initial points
 y_err = numerov(xgrid, y_0, 0.9*y_1, k, S)
 
-# Correction 
-y_cor = numerov(xgrid, y_0, 0.9*y_1, k, S)
-
-
-
-
 # Figure
 fig = plt.figure(figsize=(10,3))
 fig1 = fig.add_subplot(111)
-#fig1.plot(xgrid[1:], y[1:]/xgrid[1:], 'r-', label='Numerov')
+fig1.plot(xgrid[1:], y[1:]/xgrid[1:], 'r-', label='Numerov')
 fig1.plot(xgrid[1:], y_err[1:]/xgrid[1:], 'b-.', label='Numerov_init_error')
-fig1.plot(xgrid[1:], y_cor[1:]/xgrid[1:], 'g-.', label='Numerov_init_error')
 fig1.plot(xgrid[1:], y_exact(xgrid[1:])/xgrid[1:], 'k--', label='Exact')
 fig1.legend()
 plt.show()

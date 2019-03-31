@@ -115,22 +115,89 @@ def numerov_inward(xgrid, y_0, y_1, k, S):
     return y
 
 
-#
-# Test 1
-#
+def greensfunction(xgrid, y_0, y_1, k, broad=1.e-5):
+    """
+    GF solution
 
-xgrid = np.linspace(0., 1., 1001)
+    The solution of linear problem as 
+
+                      |inf.
+        phi(x) = intg |     G(x,x'),S(x')dx' 
+                      |0
+
+    that satisfying
+
+       -                 -
+       |  d^2            |                
+       | ------ + k(x)^2 | * G(x,x') = delta(x-x') ,
+       |  dx^2           |
+       -                 -
+   
+    similar to
+   
+        d^2
+       ------y(x) + k(x)^2 * y(x) = S(x) .
+        dx^2
+
+    Two solutions are phi_< and phi_>, 
+
+    satisfying booundary conditions at x=0 and x=inf., respectively
+
+    and normalized so that their Wronskian
+
+             d phi_>             d phi_<
+        W = --------- phi_<  -  --------- phi_> = 1 .
+             d x                 d x
+
+    Then tha Green's function is given by
+
+        G(x,x') = phi_<(x_<) * phi_>(x_>)
+
+    """
+
+    x_ = 1.0
+    S = delta(xgrid, x_, broad)
+    y = numerov(xgrid, y_0, y_1, k, S)
+    return y
+
+
+def phi_l(xgrid, l):
+    return xgrid**(l+1)
+
+def phi_r(xgrid, l):
+    return (-1./(2*l+1))*(xgrid**-l)
+
+def delta(x, x_, broad): 
+    A = broad/(2*np.pi)
+    B = (xgrid-x_)**2 + (broad/2)**2
+    return A/B
+
+def rho(xgrid):
+    return (1./(8.*np.pi))*np.exp(-xgrid)
+
+def y_exact(xgrid):
+    return 1 - 0.5*(xgrid+2)*np.exp(-xgrid)
+
+
+# domain
+xgrid = np.linspace(0., 100., 1001)
 ngrid = len(xgrid)
-A = 1.0
-y_0 = 1.0; y_1 = 0.5
-k = np.zeros(ngrid); k-= A*-4*(np.pi)**2 
-S = np.zeros(ngrid)
-y1 = numerov(xgrid, y_0, y_1, k, S)
-y2 = numerov_inward(xgrid, y_0, y_1, k, S)
 
+# initial values
+y_0 = 0.; y_1 = y_exact(xgrid)[1]; l=0
+k = -l*(l+1) * 1./(xgrid)**2
+S = np.zeros(ngrid); S += -4*np.pi * xgrid * rho(xgrid)
+y1 = numerov(xgrid, y_0, y_1, k, S)
+y2 = greensfunction(xgrid, y_0, y_1, k, S)
+
+
+# Figure
 fig = plt.figure(figsize=(10,3))
 fig1 = fig.add_subplot(111)
-fig1.plot(xgrid, y1, label='outward')
-fig1.plot(xgrid, y2, label='inward')
-plt.show()
+fig1.plot(xgrid[1:], y1[1:]/xgrid[1:], 'k--', label='Exact')
+fig1.plot(xgrid[1:], y2[1:]/xgrid[1:], 'k--', label='Exact')
 
+#fig1.plot(xgrid, phi_l(xgrid, 0), label='phi_l')
+#fig1.plot(xgrid, phi_r(xgrid, 0), label='phi_r')
+fig1.legend()
+plt.show()

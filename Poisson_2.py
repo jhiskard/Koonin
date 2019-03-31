@@ -87,50 +87,56 @@ def numerov(xgrid, y_0, y_1, k, S):
     return y
 
 
-def numerov_inward(xgrid, y_0, y_1, k, S):
-
-    # initialize y
-    ngrid = len(xgrid)
-    h = np.abs(xgrid[1] - xgrid[0])
-    y = np.zeros(ngrid)
-    y[-1] = y_0
-    y[-2] = y_1
-
-    # main loop: evaluate y[j]
-    for j in np.arange(2, ngrid):
-        #print (j, 1-j, 0-j, -1-j)
-
-        y2 = y[0-j]; y3 = y[1-j]
-        k1 = k[-1-j]; k2 = k[0-j]; k3 = k[1-j]
-        s1 = S[-1-j]; s2 = S[0-j]; s3 = S[1-j] 
-
-        term_S = 1/12. * h**2 * (s3 + 10*s2 + s1)
-        term_3 =      (1 + 1/12. *   h**2 * k3**2) * y3
-        term_2 = -2 * (1 - 5/12. * 5*h**2 * k2**2) * y2
-        term_1 =      (1 + 1/12. *   h**2 * k1**2)
-
-        y1 = (term_S - term_2 - term_3) / term_1
-        y[-1-j] = y1
-
-    return y
-
-
 #
-# Test 1
+# Poisson's equation when the charge distribution is
+#
+#                 1
+#     rho(r) = ------ * exp(-r) .
+#               8*pi 
 #
 
-xgrid = np.linspace(0., 1., 1001)
+def rho(xgrid):
+    return (1./(8.*np.pi))*np.exp(-xgrid)
+
+def y_exact(xgrid):
+    return 1 - 0.5*(xgrid+2)*np.exp(-xgrid)
+
+# domain
+xgrid = np.linspace(0., 100., 1001)
 ngrid = len(xgrid)
-A = 1.0
-y_0 = 1.0; y_1 = 0.5
-k = np.zeros(ngrid); k-= A*-4*(np.pi)**2 
-S = np.zeros(ngrid)
-y1 = numerov(xgrid, y_0, y_1, k, S)
-y2 = numerov_inward(xgrid, y_0, y_1, k, S)
 
-fig = plt.figure(figsize=(10,3))
-fig1 = fig.add_subplot(111)
-fig1.plot(xgrid, y1, label='outward')
-fig1.plot(xgrid, y2, label='inward')
+# initial values
+y_0 = 0.; y_1 = y_exact(xgrid)[1]
+k = np.zeros(ngrid)
+S = np.zeros(ngrid); S += -4*np.pi * xgrid * rho(xgrid)
+
+# Numerical solution with accurate initial points
+y = numerov(xgrid, y_0, y_1, k, S)
+
+# Numerical solution with inaccurate initial points
+y_err = numerov(xgrid, y_0, 0.9*y_1, k, S)
+
+# Correction 
+y_cor = numerov(xgrid, y_0, 0.9*y_1, k, S)
+h = (xgrid[9]-xgrid[0])
+slope = (y_cor[-1]-y_cor[0])/(ngrid*h)
+for j in np.arange(0, ngrid):
+    y_cor[j] -= slope * (j*h)
+
+# Figure
+fig = plt.figure(figsize=(10,6))
+fig1 = fig.add_subplot(211)
+fig1.plot(xgrid[1:], y_exact(xgrid[1:])/xgrid[1:], 'k--', label='Exact')
+fig1.plot(xgrid[1:], y_err[1:]/xgrid[1:], 'b-.', label='Numerov_error')
+fig1.plot(xgrid[1:], y_cor[1:]/xgrid[1:], 'r-', label='Numerov_error_corrected')
+fig1.legend()
+
+fig2 = fig.add_subplot(212)
+error_1 = (y_err[1:]-y_exact(xgrid[1:]))
+error_2 = (y_cor[1:]-y_exact(xgrid[1:]))
+fig2.plot(xgrid[1:], error_1, 'b-.', label='Numerov_error')
+fig2.plot(xgrid[1:], error_2, 'r-',  label='Numerov_error_corrected')
+fig2.legend()
+
 plt.show()
 

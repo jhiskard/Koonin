@@ -64,7 +64,7 @@ def numerov(xgrid, y_0, y_1, k, S):
 
     # initialize y
     ngrid = len(xgrid)
-    h = xgrid[1] - xgrid[0]
+    h = np.abs(xgrid[1] - xgrid[0])
     y = np.zeros(ngrid)
     y[0] = y_0
     y[1] = y_1
@@ -83,6 +83,34 @@ def numerov(xgrid, y_0, y_1, k, S):
 
         y3 = (term_S - term_2 - term_1) / term_3
         y[j] = y3
+
+    return y
+
+
+def numerov_inward(xgrid, y_0, y_1, k, S):
+
+    # initialize y
+    ngrid = len(xgrid)
+    h = np.abs(xgrid[1] - xgrid[0])
+    y = np.zeros(ngrid)
+    y[-1] = y_0
+    y[-2] = y_1
+
+    # main loop: evaluate y[j]
+    for j in np.arange(2, ngrid):
+        #print (j, 1-j, 0-j, -1-j)
+
+        y2 = y[0-j]; y3 = y[1-j]
+        k1 = k[-1-j]; k2 = k[0-j]; k3 = k[1-j]
+        s1 = S[-1-j]; s2 = S[0-j]; s3 = S[1-j] 
+
+        term_S = 1/12. * h**2 * (s3 + 10*s2 + s1)
+        term_3 =      (1 + 1/12. *   h**2 * k3**2) * y3
+        term_2 = -2 * (1 - 5/12. * 5*h**2 * k2**2) * y2
+        term_1 =      (1 + 1/12. *   h**2 * k1**2)
+
+        y1 = (term_S - term_2 - term_3) / term_1
+        y[-1-j] = y1
 
     return y
 
@@ -110,17 +138,21 @@ y_0 = 0.; y_1 = y_exact(xgrid)[1]
 k = np.zeros(ngrid)
 S = np.zeros(ngrid); S += -4*np.pi * xgrid * rho(xgrid)
 
-# Numerical solution with accurate initial points
-y = numerov(xgrid, y_0, y_1, k, S)
+error = 1e-4
 
 # Numerical solution with inaccurate initial points
-y_err = numerov(xgrid, y_0, 0.9*y_1, k, S)
+y_err = numerov(xgrid, y_0, (1-error)*y_1, k, S)
+
+# Numerical solution with inaccurate initial points (inward)
+y_0 = 1.; y_1 = y_exact(xgrid)[-2]
+print ("y_0 =", y_0, "y_1 =", y_1)
+y_cor = numerov_inward(xgrid, (1-error)*y_0, y_1, k, S)
 
 # Figure
 fig = plt.figure(figsize=(10,3))
 fig1 = fig.add_subplot(111)
-fig1.plot(xgrid[1:], y[1:]/xgrid[1:], 'r-', label='Numerov')
 fig1.plot(xgrid[1:], y_err[1:]/xgrid[1:], 'b-.', label='Numerov_init_error')
+fig1.plot(xgrid[1:], y_cor[1:]/xgrid[1:], 'r-',  label='Inward integration')
 fig1.plot(xgrid[1:], y_exact(xgrid[1:])/xgrid[1:], 'k--', label='Exact')
 fig1.legend()
 plt.show()
