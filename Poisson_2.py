@@ -55,7 +55,6 @@ def numerov(xgrid, y_0, y_1, k, S):
     - k     : oscillartory function (1-D array, len(k)==len(xgrid))
     - S     : driving term          (1-D array, len(S)==len(xgrid))
 
-
     Output
     ------
     - y : solution of the differential equation (1-D array)
@@ -96,13 +95,28 @@ def numerov(xgrid, y_0, y_1, k, S):
 #
 
 def rho(xgrid):
+    """
+    Charge distribution function
+    """
     return (1./(8.*np.pi))*np.exp(-xgrid)
 
 def y_exact(xgrid):
+    """
+    Exact solution of Poisson's equation
+    """
     return 1 - 0.5*(xgrid+2)*np.exp(-xgrid)
 
-# domain
-xgrid = np.linspace(0., 100., 1001)
+def linear(xgrid, x1, y1, x2, y2):
+    """
+    Determine the amount of linear correction
+    """
+    slope = (y2 - y1) / (x2 - x1)
+    bias = y1 - slope * x1
+    return slope * xgrid #+ bias
+
+
+# domain 
+xgrid = np.linspace(0., 20., 201)
 ngrid = len(xgrid)
 
 # initial values
@@ -110,33 +124,45 @@ y_0 = 0.; y_1 = y_exact(xgrid)[1]
 k = np.zeros(ngrid)
 S = np.zeros(ngrid); S += -4*np.pi * xgrid * rho(xgrid)
 
-# Numerical solution with accurate initial points
+# Numerical solution with accurate initial points (Analytical)
 y = numerov(xgrid, y_0, y_1, k, S)
 
-# Numerical solution with inaccurate initial points
-y_err = numerov(xgrid, y_0, 0.9*y_1, k, S)
+# Numerical solution with inaccurate initial points (5% error)
+y_err = numerov(xgrid, y_0, 0.95*y_1, k, S)
 
-# Correction 
-y_cor = numerov(xgrid, y_0, 0.9*y_1, k, S)
-h = (xgrid[9]-xgrid[0])
-slope = (y_cor[-1]-y_cor[0])/(ngrid*h)
-for j in np.arange(0, ngrid):
-    y_cor[j] -= slope * (j*h)
+# Consider Linear correction (Linear)
+y_cor = numerov(xgrid, y_0, 0.95*y_1, k, S)
+x_1 = xgrid[-11]; x_2 = xgrid[-1]
+y_1 = y_cor[-11]; y_2 = y_cor[-1]
+y_cor -= linear(xgrid, x_1, y_1, x_2, y_2)
 
+
+#
+# Table3.1
+#
+print ("%5s %10s %10s %10s %10s" % \
+      ('    r', '  Exact   ', 'Analytical', '  5% error', '    Linear'))
+print ("%5s %10s %10s %10s %10s" % \
+      ('-----', '----------', '----------', '----------', '----------'))
+
+for j in range(20,201,20):
+    x = j
+    y1 = y_exact(xgrid)[j]
+    y2 = y1-y[j]
+    y3 = y1-y_err[j]
+    y4 = y1-y_cor[j]
+    print ("%5i %10.6f %10.6f %10.6f %10.6f" % (x, y1, y2, y3, y4))
+
+
+#
 # Figure
-fig = plt.figure(figsize=(10,6))
-fig1 = fig.add_subplot(211)
-fig1.plot(xgrid[1:], y_exact(xgrid[1:])/xgrid[1:], 'k--', label='Exact')
-fig1.plot(xgrid[1:], y_err[1:]/xgrid[1:], 'b-.', label='Numerov_error')
-fig1.plot(xgrid[1:], y_cor[1:]/xgrid[1:], 'r-', label='Numerov_error_corrected')
+#
+fig = plt.figure(figsize=(10,3))
+fig1 = fig.add_subplot(111)
+fig1.plot(xgrid, y_exact(xgrid), 'k-', label='Exact')
+fig1.plot(xgrid, y,              'r-', label='Analytical')
+fig1.plot(xgrid, y_err,          'b-.', label='5% error')
+fig1.plot(xgrid, y_cor,          'g--',  label='Linear correction')
 fig1.legend()
-
-fig2 = fig.add_subplot(212)
-error_1 = (y_err[1:]-y_exact(xgrid[1:]))
-error_2 = (y_cor[1:]-y_exact(xgrid[1:]))
-fig2.plot(xgrid[1:], error_1, 'b-.', label='Numerov_error')
-fig2.plot(xgrid[1:], error_2, 'r-',  label='Numerov_error_corrected')
-fig2.legend()
-
 plt.show()
 

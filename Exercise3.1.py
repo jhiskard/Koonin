@@ -88,7 +88,7 @@ def numerov(xgrid, y_0, y_1, k, S):
 
 
 #
-# Test
+# Exercise 3.1
 #
 
 xgrid = np.linspace(0., 1., 1001)

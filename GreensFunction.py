@@ -155,16 +155,16 @@ def greensfunction(xgrid, y_0, y_1, k, broad=1.e-5):
 
     """
 
-    x_ = 1.0
+    x_ = 0.0
     S = delta(xgrid, x_, broad)
     y = numerov(xgrid, y_0, y_1, k, S)
     return y
 
 
-def phi_l(xgrid, l):
+def phi_gt(xgrid, l):
     return xgrid**(l+1)
 
-def phi_r(xgrid, l):
+def phi_lt(xgrid, l):
     return (-1./(2*l+1))*(xgrid**-l)
 
 def delta(x, x_, broad): 
@@ -184,20 +184,22 @@ xgrid = np.linspace(0., 100., 1001)
 ngrid = len(xgrid)
 
 # initial values
-y_0 = 0.; y_1 = y_exact(xgrid)[1]; l=0
-k = -l*(l+1) * 1./(xgrid)**2
-S = np.zeros(ngrid); S += -4*np.pi * xgrid * rho(xgrid)
-y1 = numerov(xgrid, y_0, y_1, k, S)
-y2 = greensfunction(xgrid, y_0, y_1, k, S)
+#y_0 = 0.; y_1 = y_exact(xgrid)[1]; l=0
+#k = -l*(l+1) * 1./(xgrid)**2
+#S = np.zeros(ngrid); S += -4*np.pi * xgrid * rho(xgrid)
+#y1 = numerov(xgrid, y_0, y_1, k, S)
+#y2 = greensfunction(xgrid, y_0, y_1, k, S)
 
 
 # Figure
 fig = plt.figure(figsize=(10,3))
 fig1 = fig.add_subplot(111)
-fig1.plot(xgrid[1:], y1[1:]/xgrid[1:], 'k--', label='Exact')
-fig1.plot(xgrid[1:], y2[1:]/xgrid[1:], 'k--', label='Exact')
+#fig1.plot(xgrid[1:], y1[1:]/xgrid[1:], 'k--', label='Exact')
+#fig1.plot(xgrid[1:], y2[1:]/xgrid[1:], 'k--', label='Exact')
 
-#fig1.plot(xgrid, phi_l(xgrid, 0), label='phi_l')
-#fig1.plot(xgrid, phi_r(xgrid, 0), label='phi_r')
+#fig1.plot(xgrid[501:],  phi_gt(xgrid, 0)[501:],  label='phi_gt')
+#fig1.plot(xgrid[1:501], phi_lt(xgrid, 0)[1:501], label='phi_lt')
+fig1.plot(xgrid[501:],  phi_gt(xgrid, 0)[501:] /xgrid[501:],  label='PHI_gt')
+fig1.plot(xgrid[1:501], phi_lt(xgrid, 0)[1:501]/xgrid[1:501], label='PHI_lt')
 fig1.legend()
 plt.show()
