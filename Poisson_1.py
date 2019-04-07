@@ -102,7 +102,7 @@ def y_exact(xgrid):
     return 1 - 0.5*(xgrid+2)*np.exp(-xgrid)
 
 # domain
-xgrid = np.linspace(0., 100., 1001)
+xgrid = np.linspace(0., 20., 201)
 ngrid = len(xgrid)
 
 # initial values
@@ -110,18 +110,21 @@ y_0 = 0.; y_1 = y_exact(xgrid)[1]
 k = np.zeros(ngrid)
 S = np.zeros(ngrid); S += -4*np.pi * xgrid * rho(xgrid)
 
-# Numerical solution with accurate initial points
+# Numerical solution with accurate initial points (Analytical)
 y = numerov(xgrid, y_0, y_1, k, S)
 
-# Numerical solution with inaccurate initial points
-y_err = numerov(xgrid, y_0, 0.9*y_1, k, S)
+# Numerical solution with inaccurate initial points (5% error)
+y_err = numerov(xgrid, y_0, 0.95*y_1, k, S)
 
 # Figure
 fig = plt.figure(figsize=(10,3))
 fig1 = fig.add_subplot(111)
-fig1.plot(xgrid[1:], y[1:]/xgrid[1:], 'r-', label='Numerov')
-fig1.plot(xgrid[1:], y_err[1:]/xgrid[1:], 'b-.', label='Numerov_init_error')
-fig1.plot(xgrid[1:], y_exact(xgrid[1:])/xgrid[1:], 'k--', label='Exact')
+fig1.plot(xgrid, y_exact(xgrid), 'k-',  label='Exact')
+fig1.plot(xgrid, y,              'r-',  label='Analytical')
+fig1.plot(xgrid, y_err,          'b-.', label='5% error')
+#fig1.plot(xgrid[1:], y[1:]/xgrid[1:], 'r-', label='Numerov')
+#fig1.plot(xgrid[1:], y_err[1:]/xgrid[1:], 'b-.', label='Numerov_init_error')
+#fig1.plot(xgrid[1:], y_exact(xgrid[1:])/xgrid[1:], 'k--', label='Exact')
 fig1.legend()
 plt.show()
 

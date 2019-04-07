@@ -140,18 +140,20 @@ y_cor -= linear(xgrid, x_1, y_1, x_2, y_2)
 #
 # Table3.1
 #
-print ("%5s %10s %10s %10s %10s" % \
-      ('    r', '  Exact   ', 'Analytical', '  5% error', '    Linear'))
-print ("%5s %10s %10s %10s %10s" % \
-      ('-----', '----------', '----------', '----------', '----------'))
+print ("%5s %10s %12s %10s %10s" % \
+      ('    r', '     Exact', '  Analytical', '  5% error', '    Linear'))
+print ("%5s %10s %12s %10s %10s" % \
+      ('-----', '----------', '------------', '----------', '----------'))
 
+h = xgrid[1]-xgrid[0]
 for j in range(20,201,20):
-    x = j
+    x = int(j*h)
     y1 = y_exact(xgrid)[j]
     y2 = y1-y[j]
     y3 = y1-y_err[j]
     y4 = y1-y_cor[j]
-    print ("%5i %10.6f %10.6f %10.6f %10.6f" % (x, y1, y2, y3, y4))
+    print ("%5i %10.6f %12.6f %10.6f %10.6f" % (x, y1, y2, y3, y4))
+print ("Interval (h): %4.2f" % h)
 
 
 #
@@ -159,10 +161,10 @@ for j in range(20,201,20):
 #
 fig = plt.figure(figsize=(10,3))
 fig1 = fig.add_subplot(111)
-fig1.plot(xgrid, y_exact(xgrid), 'k-', label='Exact')
-fig1.plot(xgrid, y,              'r-', label='Analytical')
+fig1.plot(xgrid, y_exact(xgrid), 'k-',  label='Exact')
+fig1.plot(xgrid, y,              'r-',  label='Analytical')
 fig1.plot(xgrid, y_err,          'b-.', label='5% error')
-fig1.plot(xgrid, y_cor,          'g--',  label='Linear correction')
+fig1.plot(xgrid, y_cor,          'g--', label='Linear correction')
 fig1.legend()
 plt.show()
 

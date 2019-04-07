@@ -130,7 +130,7 @@ def y_exact(xgrid):
     return 1 - 0.5*(xgrid+2)*np.exp(-xgrid)
 
 # domain
-xgrid = np.linspace(0., 100., 1001)
+xgrid = np.linspace(0., 20., 201)
 ngrid = len(xgrid)
 
 # initial values
@@ -151,9 +151,12 @@ y_cor = numerov_inward(xgrid, (1-error)*y_0, y_1, k, S)
 # Figure
 fig = plt.figure(figsize=(10,3))
 fig1 = fig.add_subplot(111)
-fig1.plot(xgrid[1:], y_err[1:]/xgrid[1:], 'b-.', label='Numerov_init_error')
-fig1.plot(xgrid[1:], y_cor[1:]/xgrid[1:], 'r-',  label='Inward integration')
-fig1.plot(xgrid[1:], y_exact(xgrid[1:])/xgrid[1:], 'k--', label='Exact')
+fig1.plot(xgrid, y_err, 'b-.', label='Numerov_init_error')
+fig1.plot(xgrid, y_cor, 'r-',  label='Inward integration')
+fig1.plot(xgrid, y_exact(xgrid), 'k--', label='Exact')
+#fig1.plot(xgrid, y_err, 'b-.', label='Numerov_init_error')
+#fig1.plot(xgrid, y_cor, 'r-',  label='Inward integration')
+#fig1.plot(xgrid, y_exact(xgrid), 'k--', label='Exact')
 fig1.legend()
 plt.show()
 
