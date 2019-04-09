@@ -1,6 +1,5 @@
 from __future__ import print_function
 import numpy as np
-from scipy.constants import hbar
 import matplotlib.pyplot as plt
 
 
@@ -55,7 +54,6 @@ def numerov(xgrid, y_0, y_1, k, S):
     - k     : oscillartory function (1-D array, len(k)==len(xgrid))
     - S     : driving term          (1-D array, len(S)==len(xgrid))
 
-
     Output
     ------
     - y : solution of the differential equation (1-D array)
@@ -98,7 +96,6 @@ def numerov_inward(xgrid, y_0, y_1, k, S):
 
     # main loop: evaluate y[j]
     for j in np.arange(2, ngrid):
-        #print (j, 1-j, 0-j, -1-j)
 
         y2 = y[0-j]; y3 = y[1-j]
         k1 = k[-1-j]; k2 = k[0-j]; k3 = k[1-j]
@@ -115,19 +112,32 @@ def numerov_inward(xgrid, y_0, y_1, k, S):
     return y
 
 
-#
-# Poisson's equation when the charge distribution is
-#
-#                 1
-#     rho(r) = ------ * exp(-r) .
-#               8*pi 
-#
-
 def rho(xgrid):
     return (1./(8.*np.pi))*np.exp(-xgrid)
 
 def y_exact(xgrid):
     return 1 - 0.5*(xgrid+2)*np.exp(-xgrid)
+
+
+#
+# Exercise 3.2 (Koonin's Ch.3)
+#
+# Solve the problem defined by 
+#
+#      d^2 y
+#     ------- = -4 * pi * x * rho
+#      dx*2
+#
+# and
+#                 1
+#     rho(r) = ------ * exp(-r)
+#               8*pi 
+#
+# by Numerov integration inward from large x using the known asymptotic 
+# behavior of phi for the starting values. How well does your solution
+# satisfy the boundary condition phi(x=0)=0 ?
+#
+
 
 # domain
 xgrid = np.linspace(0., 20., 201)
@@ -135,13 +145,14 @@ ngrid = len(xgrid)
 
 # initial values
 y_0 = 0.; y_1 = y_exact(xgrid)[1]
+
+# k and S terms
 k = np.zeros(ngrid)
 S = np.zeros(ngrid); S += -4*np.pi * xgrid * rho(xgrid)
 
+# introduce errors
 error = 1e-4
-
-# Numerical solution with inaccurate initial points
-y_err = numerov(xgrid, y_0, (1-error)*y_1, k, S)
+print ("Error:", error)
 
 # Numerical solution with inaccurate initial points (inward)
 y_0 = 1.; y_1 = y_exact(xgrid)[-2]
@@ -151,12 +162,8 @@ y_cor = numerov_inward(xgrid, (1-error)*y_0, y_1, k, S)
 # Figure
 fig = plt.figure(figsize=(10,3))
 fig1 = fig.add_subplot(111)
-fig1.plot(xgrid, y_err, 'b-.', label='Numerov_init_error')
-fig1.plot(xgrid, y_cor, 'r-',  label='Inward integration')
+fig1.plot(xgrid, y_cor,          'r-',  label='Inward')
 fig1.plot(xgrid, y_exact(xgrid), 'k--', label='Exact')
-#fig1.plot(xgrid, y_err, 'b-.', label='Numerov_init_error')
-#fig1.plot(xgrid, y_cor, 'r-',  label='Inward integration')
-#fig1.plot(xgrid, y_exact(xgrid), 'k--', label='Exact')
 fig1.legend()
 plt.show()
 

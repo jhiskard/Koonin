@@ -1,6 +1,5 @@
 from __future__ import print_function
 import numpy as np
-from scipy.constants import hbar
 import matplotlib.pyplot as plt
 
 

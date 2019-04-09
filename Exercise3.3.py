@@ -1,6 +1,5 @@
 from __future__ import print_function
 import numpy as np
-from scipy.constants import hbar
 import matplotlib.pyplot as plt
 
 
@@ -55,7 +54,6 @@ def numerov(xgrid, y_0, y_1, k, S):
     - k     : oscillartory function (1-D array, len(k)==len(xgrid))
     - S     : driving term          (1-D array, len(S)==len(xgrid))
 
-
     Output
     ------
     - y : solution of the differential equation (1-D array)
@@ -102,6 +100,10 @@ def simpson_38(arr_x, arr_y, intp_mag=5):
     - arr_y : y (1-D array), integrand y(x), len(arr_y)==len(arr_x)
     - intp_mag : internal interpolation (default=5 is enough in general.)
 
+    Output
+    ------
+    - S : summation result
+
     """
 
     # interpolation
@@ -142,12 +144,38 @@ def phi_gt(xgrid, l):
 
 def rho(xgrid):
     """
-    Eq. (3.9)
+    Charge distribution function
     """
     return (1./(8.*np.pi))*np.exp(-xgrid)
 
 def y_exact(xgrid):
+    """
+    Exact solution of Poisson's equation
+    """
     return 1 - 0.5*(xgrid+2)*np.exp(-xgrid)
+
+
+#
+# Exercise 3.1 (Koonin's Ch.3)
+#
+# Solve the problem defined by Eqs. 
+#
+#                 1
+#     rho(r) = ------ * exp(-r)
+#               8*pi 
+#
+# and
+#     --                 --
+#     |  d^2      l(l+1)  |
+#     | ------ - -------- | * phi(r) = -4 * pi * r * rho
+#     |  dr*2      r^2    |
+#     --                 --
+#
+# for l=0 using the Green's function method.
+#
+# Compare your results with those obtained by direct integration and 
+# with the analytical solution.
+#
 
 
 # domain
@@ -157,6 +185,8 @@ ngrid = len(xgrid)
 # initial values
 l = 0
 y_0 = 0.; y_1 = y_exact(xgrid)[1]
+
+# k and S terms
 k = np.zeros(ngrid) # k = 0 for l = 0
 S = np.zeros(ngrid); S += -4*np.pi * xgrid * rho(xgrid)
 
@@ -165,8 +195,6 @@ y = numerov(xgrid, y_0, y_1, k, S)
 
 # Direct solution from Green's function method
 l = 0
-k = np.zeros(ngrid) # k = 0 for l = 0
-S = np.zeros(ngrid); S += -4*np.pi * xgrid * rho(xgrid)
 y_lt = phi_lt(xgrid, l)
 y_gt = phi_gt(xgrid, l)
 

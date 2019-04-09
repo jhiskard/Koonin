@@ -1,6 +1,5 @@
 from __future__ import print_function
 import numpy as np
-from scipy.constants import hbar
 import matplotlib.pyplot as plt
 
 
@@ -55,7 +54,6 @@ def numerov(xgrid, y_0, y_1, k, S):
     - k     : oscillartory function (1-D array, len(k)==len(xgrid))
     - S     : driving term          (1-D array, len(S)==len(xgrid))
 
-
     Output
     ------
     - y : solution of the differential equation (1-D array)
@@ -88,17 +86,34 @@ def numerov(xgrid, y_0, y_1, k, S):
 
 
 #
-# Exercise 3.1
+# Exercise 3.1 (Koonin's Ch.3)
+#
+# Apply the Nuerov algorithm to the problem
+#
+#      d^2 y
+#     ------- = -4 * pi^2 * y; y(0)=1, y'(0)=0 .
+#      dx*2
+#
+# Integrate from x=0 to x=1 with various step sizes and compare the 
+# effciency and accuracy with some of the methods discussed in previous
+# lectures. 
 #
 
+# from x=0 to x=1, 
 xgrid = np.linspace(0., 1., 1001)
 ngrid = len(xgrid)
 
-y_0 = 10.0; y_1 = 10.0
+# initial values
+y_0 = 1.0; y_1 = 1.0
+
+# k and S terms
 k = np.zeros(ngrid); k+= 4.*(np.pi)**2
 S = np.zeros(ngrid)
+
+# evaluate y by Numerov algorithm
 y = numerov(xgrid, y_0, y_1, k, S)
 
+# figure
 fig = plt.figure(figsize=(10,3))
 fig1 = fig.add_subplot(111)
 fig1.plot(xgrid, y)

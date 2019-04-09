@@ -1,6 +1,5 @@
 from __future__ import print_function
 import numpy as np
-from scipy.constants import hbar
 import matplotlib.pyplot as plt
 
 
@@ -55,7 +54,6 @@ def numerov(xgrid, y_0, y_1, k, S):
     - k     : oscillartory function (1-D array, len(k)==len(xgrid))
     - S     : driving term          (1-D array, len(S)==len(xgrid))
 
-
     Output
     ------
     - y : solution of the differential equation (1-D array)
@@ -96,10 +94,17 @@ def numerov(xgrid, y_0, y_1, k, S):
 #
 
 def rho(xgrid):
+    """
+    Charge distribution function
+    """
     return (1./(8.*np.pi))*np.exp(-xgrid)
 
 def y_exact(xgrid):
+    """
+    Exact solution of Poisson's equation
+    """
     return 1 - 0.5*(xgrid+2)*np.exp(-xgrid)
+
 
 # domain
 xgrid = np.linspace(0., 20., 201)
@@ -122,9 +127,6 @@ fig1 = fig.add_subplot(111)
 fig1.plot(xgrid, y_exact(xgrid), 'k-',  label='Exact')
 fig1.plot(xgrid, y,              'r-',  label='Analytical')
 fig1.plot(xgrid, y_err,          'b-.', label='5% error')
-#fig1.plot(xgrid[1:], y[1:]/xgrid[1:], 'r-', label='Numerov')
-#fig1.plot(xgrid[1:], y_err[1:]/xgrid[1:], 'b-.', label='Numerov_init_error')
-#fig1.plot(xgrid[1:], y_exact(xgrid[1:])/xgrid[1:], 'k--', label='Exact')
 fig1.legend()
 plt.show()
 
